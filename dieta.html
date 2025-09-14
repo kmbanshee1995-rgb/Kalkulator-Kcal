@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Planer Posiłków</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 20px; }
+    h1, h2 { text-align: center; }
+    .container { display: flex; gap: 20px; }
+    .form-box { width: 320px; padding: 15px; background: white; border: 1px solid #ccc; border-radius: 10px; }
+    .form-box label { display: block; margin-top: 10px; font-weight: bold; }
+    .form-box select, .form-box input { width: 100%; padding: 5px; margin-top: 5px; }
+    .result { flex: 1; padding: 15px; background: white; border: 1px solid #ccc; border-radius: 10px; }
+    .meals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+    .meal-box { border: 1px solid #000; padding: 10px; min-height: 200px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+    th, td { border: 1px solid #000; padding: 4px; text-align: center; }
+    .remaining { font-weight: bold; color: darkred; margin-top: 5px; }
+    button { margin-top: 5px; padding: 5px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Kalkulator Kalorii i Planer Posiłków</h1>
+  <div class="container">
+    <div class="form-box">
+      <label>Liczba posiłków:</label>
+      <select id="meals">
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+
+      <label>Waga (kg):</label>
+      <input type="number" id="weight" placeholder="np. 70">
+      <label>Wzrost (cm):</label>
+      <input type="number" id="height" placeholder="np. 175">
+      <label>Wiek:</label>
+      <input type="number" id="age" placeholder="np. 25">
+      <label>Płeć:</label>
+      <select id="gender">
+        <option value="male">Mężczyzna</option>
+        <option value="female">Kobieta</option>
+      </select>
+
+      <label>Aktywność fizyczna:</label>
+      <select id="activity">
+        <option value="1.2">Siedzący tryb życia</option>
+        <option value="1.4">Lekka aktywność</option>
+        <option value="1.6">Umiarkowana aktywność</option>
+        <option value="1.8">Wysoka aktywność</option>
+        <option value="2.0">Bardzo wysoka aktywność</option>
+      </select>
+
+      <label>Dieta:</label>
+      <select id="diet">
+        <option value="maintain">Utrzymanie wagi</option>
+        <option value="gain">Przyrost masy</option>
+        <option value="loss">Redukcja</option>
+      </select>
+      <button onclick="calculate()">Oblicz</button>
+    </div>
+
+    <div class="result">
+      <h2>Wynik</h2>
+      <p><strong>Całkowite zapotrzebowanie:</strong> <span id="calories">-</span> kcal</p>
+      <p><strong>Białko:</strong> <span id="protein">-</span> g |
+         <strong>Tłuszcze:</strong> <span id="fat">-</span> g |
+         <strong>Węglowodany:</strong> <span id="carbs">-</span> g</p>
+      <div class="meals" id="mealsPlan"></div>
+    </div>
+  </div>
+
+<script>
+  // Baza produktów (wartości na 100g)
+  const products = [
+    {name:"Pierś z kurczaka", protein:22, fat:2, carbs:0},
+    {name:"Indyk", protein:21, fat:1, carbs:0},
+    {name:"Łosoś", protein:20, fat:13, carbs:0},
+    {name:"Tuńczyk", protein:23, fat:1, carbs:0},
+    {name:"Jajka", protein:13, fat:11, carbs:1},
+    {name:"Twaróg chudy", protein:18, fat:1, carbs:3},
+    {name:"Jogurt naturalny", protein:10, fat:3, carbs:4},
+    {name:"Tofu", protein:8, fat:5, carbs:2},
+    {name:"Soczewica gotowana", protein:9, fat:0, carbs:20},
+    {name:"Ryż biały", protein:7, fat:1, carbs:78},
+    {name:"Ryż brązowy", protein:8, fat:2, carbs:76},
+    {name:"Makaron pełnoziarnisty", protein:12, fat:2, carbs:70},
+    {name:"Kasza gryczana", protein:13, fat:3, carbs:70},
+    {name:"Kasza jaglana", protein:11, fat:4, carbs:72},
+    {name:"Ziemniaki gotowane", protein:2, fat:0, carbs:20},
+    {name:"Bataty", protein:2, fat:0, carbs:20},
+    {name:"Pieczywo pełnoziarniste", protein:9, fat:3, carbs:49},
+    {name:"Bułka ciabatta", protein:10, fat:3, carbs:57},
+    {name:"Tortilla pełnoziarnista", protein:9, fat:4, carbs:50},
+    {name:"Oliwa z oliwek", protein:0, fat:100, carbs:0},
+    {name:"Awokado", protein:2, fat:15, carbs:9},
+    {name:"Orzechy włoskie", protein:15, fat:65, carbs:14},
+    {name:"Migdały", protein:21, fat:49, carbs:22},
+    {name:"Brokuł", protein:3, fat:0, carbs:7},
+    {name:"Szpinak", protein:3, fat:0, carbs:4},
+    {name:"Marchew", protein:1, fat:0, carbs:10},
+    {name:"Cukinia", protein:1, fat:0, carbs:3},
+    {name:"Papryka czerwona", protein:1, fat:0, carbs:6},
+    {name:"Pomidor", protein:1, fat:0, carbs:4},
+    {name:"Jabłko", protein:0, fat:0, carbs:14},
+    {name:"Banan", protein:1, fat:0, carbs:23},
+    {name:"Borówki", protein:1, fat:0, carbs:14},
+    {name:"Pomarańcza", protein:1, fat:0, carbs:12},
+    {name:"Truskawki", protein:1, fat:0, carbs:8},
+  ];
+
+  function calculate() {
+    const meals = parseInt(document.getElementById("meals").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const height = parseFloat(document.getElementById("height").value);
+    const age = parseInt(document.getElementById("age").value);
+    const gender = document.getElementById("gender").value;
+    const activity = parseFloat(document.getElementById("activity").value);
+    const diet = document.getElementById("diet").value;
+
+    if (!weight || !height || !age) {
+      alert("Wprowadź wszystkie dane!");
+      return;
+    }
+
+    let bmr = gender === "male"
+      ? 10 * weight + 6.25 * height - 5 * age + 5
+      : 10 * weight + 6.25 * height - 5 * age - 161;
+
+    let calories = bmr * activity;
+    if (diet === "gain") calories += 300;
+    if (diet === "loss") calories -= 300;
+
+    const protein = Math.round((calories * 0.20) / 4);
+    const fat = Math.round((calories * 0.25) / 9);
+    const carbs = Math.round((calories * 0.55) / 4);
+
+    document.getElementById("calories").textContent = Math.round(calories);
+    document.getElementById("protein").textContent = protein;
+    document.getElementById("fat").textContent = fat;
+    document.getElementById("carbs").textContent = carbs;
+
+    const mealsPlan = document.getElementById("mealsPlan");
+    mealsPlan.innerHTML = "";
+
+    for (let i = 1; i <= meals; i++) {
+      const mealCalories = Math.round(calories / meals);
+      const mealProtein = Math.round(protein / meals);
+      const mealFat = Math.round(fat / meals);
+      const mealCarbs = Math.round(carbs / meals);
+
+      const div = document.createElement("div");
+      div.className = "meal-box";
+      div.innerHTML = `
+        <strong>Posiłek ${i}</strong><br>
+        Cel: ${mealCalories} kcal (B: ${mealProtein}g, T: ${mealFat}g, W: ${mealCarbs}g)
+        <div class="remaining" id="remain-${i}">
+          Pozostało → kcal: ${mealCalories}, B: ${mealProtein}g, T: ${mealFat}g, W: ${mealCarbs}g
+        </div>
+        <select id="product-${i}"></select>
+        <input type="number" id="grams-${i}" placeholder="gramy" min="1">
+        <button onclick="addProduct(${i})">Dodaj</button>
+        <table id="table-${i}">
+          <tr><th>Produkt</th><th>g</th><th>Kcal</th><th>B</th><th>T</th><th>W</th></tr>
+        </table>
+      `;
+      mealsPlan.appendChild(div);
+      updateProductList(i, mealCalories, mealProtein, mealFat, mealCarbs);
+    }
+  }
+
+  function updateProductList(mealId, remainKcal, remainP, remainF, remainC) {
+    const select = document.getElementById(`product-${mealId}`);
+    if (remainKcal <= 0) {
+      select.innerHTML = "<option>Brak dostępnych produktów</option>";
+      select.disabled = true;
+      return;
+    }
+
+    select.disabled = false;
+    select.innerHTML = products
+      .filter(p => {
+        const kcal100 = p.protein*4 + p.fat*9 + p.carbs*4;
+        if (remainP <= 0 && p.protein > 5) return false;
+        if (remainF <= 0 && p.fat > 5) return false;
+        if (remainC <= 0 && p.carbs > 10) return false;
+        if (remainKcal <= 0 && kcal100 > 50) return false;
+        return true;
+      })
+      .map(p => `<option value='${JSON.stringify(p)}'>${p.name}</option>`)
+      .join("");
+  }
+
+  function addProduct(mealId) {
+    const select = document.getElementById(`product-${mealId}`);
+    if (select.disabled) return;
+
+    const product = JSON.parse(select.value);
+    const gramsInput = document.getElementById(`grams-${mealId}`);
+    let grams = parseFloat(gramsInput.value);
+
+    if (!grams || grams <= 0) {
+      alert("Podaj ilość gramów!");
+      return;
+    }
+
+    const remainDiv = document.getElementById(`remain-${mealId}`);
+    const current = remainDiv.textContent.match(/kcal: (-?\d+), B: (-?\d+)g, T: (-?\d+)g, W: (-?\d+)g/);
+    let rKcal = parseInt(current[1]);
+    let rP = parseInt(current[2]);
+    let rF = parseInt(current[3]);
+    let rC = parseInt(current[4]);
+
+    const kcal = (product.protein*4 + product.fat*9 + product.carbs*4) * grams/100;
+    const prot = product.protein * grams/100;
+    const fat = product.fat * grams/100;
+    const carb = product.carbs * grams/100;
+
+    if (kcal > rKcal || prot > rP || fat > rF || carb > rC) {
+      alert("Nie możesz przekroczyć celu dla posiłku!");
+      return;
+    }
+
+    const table = document.getElementById(`table-${mealId}`);
+    table.innerHTML += `<tr>
+      <td>${product.name}</td>
+      <td>${grams.toFixed(0)}</td>
+      <td>${kcal.toFixed(0)}</td>
+      <td>${prot.toFixed(0)}</td>
+      <td>${fat.toFixed(0)}</td>
+      <td>${carb.toFixed(0)}</td>
+    </tr>`;
+
+    rKcal -= kcal;
+    rP -= prot;
+    rF -= fat;
+    rC -= carb;
+    remainDiv.textContent = `Pozostało → kcal: ${Math.max(0, rKcal.toFixed(0))}, B: ${Math.max(0, rP.toFixed(0))}g, T: ${Math.max(0, rF.toFixed(0))}g, W: ${Math.max(0, rC.toFixed(0))}g`;
+
+    gramsInput.value = "";
+    updateProductList(mealId, rKcal, rP, rF, rC);
+  }
+</script>
+</body>
+</html>
