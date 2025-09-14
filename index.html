@@ -2,71 +2,442 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Planer Posiłków</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planer Posiłków Pro</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 20px; }
-    h1, h2 { text-align: center; }
-    .container { display: flex; gap: 20px; }
-    .form-box { width: 320px; padding: 15px; background: white; border: 1px solid #ccc; border-radius: 10px; }
-    .form-box label { display: block; margin-top: 10px; font-weight: bold; }
-    .form-box select, .form-box input { width: 100%; padding: 5px; margin-top: 5px; }
-    .result { flex: 1; padding: 15px; background: white; border: 1px solid #ccc; border-radius: 10px; }
-    .meals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-    .meal-box { border: 1px solid #000; padding: 10px; min-height: 200px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-    th, td { border: 1px solid #000; padding: 4px; text-align: center; }
-    .remaining { font-weight: bold; color: darkred; margin-top: 5px; }
-    button { margin-top: 5px; padding: 5px 10px; cursor: pointer; }
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    h1 { 
+      text-align: center; 
+      color: white;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      animation: fadeInDown 1s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .container { 
+      display: flex; 
+      gap: 20px; 
+      max-width: 1400px;
+      margin: 0 auto;
+      animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    .form-box { 
+      width: 380px; 
+      padding: 25px; 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .form-box:hover {
+      transform: translateY(-5px);
+    }
+    
+    .form-box h2 {
+      color: #333;
+      margin-top: 0;
+      text-align: center;
+      font-size: 1.5em;
+    }
+    
+    .form-box label { 
+      display: block; 
+      margin-top: 15px; 
+      font-weight: 600;
+      color: #555;
+      font-size: 0.95em;
+    }
+    
+    .form-box select, .form-box input { 
+      width: 100%; 
+      padding: 12px 15px; 
+      margin-top: 5px;
+      border: 2px solid #e1e8ed;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+    
+    .form-box select:focus, .form-box input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .calculate-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .calculate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .result { 
+      flex: 1; 
+      padding: 25px; 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .result h2 {
+      color: #333;
+      margin-top: 0;
+      text-align: center;
+      font-size: 1.8em;
+    }
+    
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: scale(1.05);
+    }
+    
+    .stat-card .value {
+      font-size: 2em;
+      font-weight: bold;
+      display: block;
+    }
+    
+    .stat-card .label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    
+    .meals { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+      gap: 20px; 
+      margin-top: 30px; 
+    }
+    
+    .meal-box { 
+      border: none;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      padding: 20px; 
+      min-height: 250px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .meal-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .meal-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .meal-goal {
+      background: rgba(255,255,255,0.7);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: 600;
+      color: #555;
+    }
+    
+    .remaining { 
+      font-weight: bold; 
+      color: #e74c3c; 
+      margin: 10px 0;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .product-selector {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+      align-items: end;
+    }
+    
+    .product-selector select {
+      flex: 2;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+    }
+    
+    .grams-input-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    .grams-input-container input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+    
+    .max-grams-hint {
+      position: absolute;
+      top: -25px;
+      right: 0;
+      background: #ff6b6b;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: bold;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .add-btn {
+      padding: 10px 15px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .add-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+    }
+    
+    .add-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 15px; 
+      font-size: 13px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    th { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    td { 
+      border: 1px solid #eee;
+      padding: 8px;
+      text-align: center;
+    }
+    
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    
+    tr:hover {
+      background: #e3f2fd;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+      margin: 5px 0;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .form-box {
+        width: 100%;
+      }
+      
+      .meals {
+        grid-template-columns: 1fr;
+      }
+      
+      .summary-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: #666;
+      margin-top: 50px;
+      font-size: 1.1em;
+    }
+    
+    .empty-state::before {
+      content: "🍽️";
+      font-size: 3em;
+      display: block;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>Kalkulator Kalorii i Planer Posiłków</h1>
+  <h1>🥗 Kalkulator Kalorii & Planer Posiłków</h1>
   <div class="container">
     <div class="form-box">
+      <h2>📊 Konfiguracja</h2>
+      
       <label>Liczba posiłków:</label>
       <select id="meals">
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
+        <option value="3">3 posiłki (30% / 40% / 30%)</option>
+        <option value="4" selected>4 posiłki (25% / 10% / 40% / 25%)</option>
+        <option value="5">5 posiłków (25% / 15% / 30% / 10% / 20%)</option>
+        <option value="6">6 posiłków (20% / 15% / 25% / 15% / 15% / 10%)</option>
       </select>
 
       <label>Waga (kg):</label>
       <input type="number" id="weight" placeholder="np. 70">
+      
       <label>Wzrost (cm):</label>
       <input type="number" id="height" placeholder="np. 175">
+      
       <label>Wiek:</label>
       <input type="number" id="age" placeholder="np. 25">
+      
       <label>Płeć:</label>
       <select id="gender">
-        <option value="male">Mężczyzna</option>
-        <option value="female">Kobieta</option>
+        <option value="male">👨 Mężczyzna</option>
+        <option value="female">👩 Kobieta</option>
       </select>
 
       <label>Aktywność fizyczna:</label>
       <select id="activity">
-        <option value="1.2">Siedzący tryb życia</option>
-        <option value="1.4">Lekka aktywność</option>
-        <option value="1.6">Umiarkowana aktywność</option>
-        <option value="1.8">Wysoka aktywność</option>
-        <option value="2.0">Bardzo wysoka aktywność</option>
+        <option value="1.2">🪑 Siedzący tryb życia</option>
+        <option value="1.4">🚶 Lekka aktywność</option>
+        <option value="1.6">🏃 Umiarkowana aktywność</option>
+        <option value="1.8">🏋️ Wysoka aktywność</option>
+        <option value="2.0">💪 Bardzo wysoka aktywność</option>
       </select>
 
-      <label>Dieta:</label>
+      <label>Cel diety:</label>
       <select id="diet">
-        <option value="maintain">Utrzymanie wagi</option>
-        <option value="gain">Przyrost masy</option>
-        <option value="loss">Redukcja</option>
+        <option value="maintain">⚖️ Utrzymanie wagi</option>
+        <option value="gain">📈 Przyrost masy</option>
+        <option value="loss">📉 Redukcja</option>
       </select>
-      <button onclick="calculate()">Oblicz</button>
+      
+      <button class="calculate-btn" onclick="calculate()">✨ Oblicz Plan</button>
     </div>
 
     <div class="result">
-      <h2>Wynik</h2>
-      <p><strong>Całkowite zapotrzebowanie:</strong> <span id="calories">-</span> kcal</p>
-      <p><strong>Białko:</strong> <span id="protein">-</span> g |
-         <strong>Tłuszcze:</strong> <span id="fat">-</span> g |
-         <strong>Węglowodany:</strong> <span id="carbs">-</span> g</p>
+      <h2>📈 Twój Plan Żywieniowy</h2>
+      
+      <div id="summarySection" style="display: none;">
+        <div class="summary-stats">
+          <div class="stat-card">
+            <span class="value" id="calories">-</span>
+            <span class="label">Kalorie</span>
+          </div>
+          <div class="stat-card">
+            <span class="value" id="protein">-</span>
+            <span class="label">Białko (g)</span>
+          </div>
+          <div class="stat-card">
+            <span class="value" id="fat">-</span>
+            <span class="label">Tłuszcze (g)</span>
+          </div>
+          <div class="stat-card">
+            <span class="value" id="carbs">-</span>
+            <span class="label">Węglowodany (g)</span>
+          </div>
+        </div>
+      </div>
+      
+      <div id="emptyState" class="empty-state">
+        <div>Wprowadź swoje dane i kliknij "Oblicz Plan" aby rozpocząć planowanie posiłków</div>
+      </div>
+      
       <div class="meals" id="mealsPlan"></div>
     </div>
   </div>
@@ -74,41 +445,56 @@
 <script>
   // Baza produktów (wartości na 100g)
   const products = [
-    {name:"Pierś z kurczaka", protein:22, fat:2, carbs:0},
-    {name:"Indyk", protein:21, fat:1, carbs:0},
-    {name:"Łosoś", protein:20, fat:13, carbs:0},
-    {name:"Tuńczyk", protein:23, fat:1, carbs:0},
-    {name:"Jajka", protein:13, fat:11, carbs:1},
-    {name:"Twaróg chudy", protein:18, fat:1, carbs:3},
-    {name:"Jogurt naturalny", protein:10, fat:3, carbs:4},
-    {name:"Tofu", protein:8, fat:5, carbs:2},
-    {name:"Soczewica gotowana", protein:9, fat:0, carbs:20},
-    {name:"Ryż biały", protein:7, fat:1, carbs:78},
-    {name:"Ryż brązowy", protein:8, fat:2, carbs:76},
-    {name:"Makaron pełnoziarnisty", protein:12, fat:2, carbs:70},
-    {name:"Kasza gryczana", protein:13, fat:3, carbs:70},
-    {name:"Kasza jaglana", protein:11, fat:4, carbs:72},
-    {name:"Ziemniaki gotowane", protein:2, fat:0, carbs:20},
-    {name:"Bataty", protein:2, fat:0, carbs:20},
-    {name:"Pieczywo pełnoziarniste", protein:9, fat:3, carbs:49},
-    {name:"Bułka ciabatta", protein:10, fat:3, carbs:57},
-    {name:"Tortilla pełnoziarnista", protein:9, fat:4, carbs:50},
-    {name:"Oliwa z oliwek", protein:0, fat:100, carbs:0},
-    {name:"Awokado", protein:2, fat:15, carbs:9},
-    {name:"Orzechy włoskie", protein:15, fat:65, carbs:14},
-    {name:"Migdały", protein:21, fat:49, carbs:22},
-    {name:"Brokuł", protein:3, fat:0, carbs:7},
-    {name:"Szpinak", protein:3, fat:0, carbs:4},
-    {name:"Marchew", protein:1, fat:0, carbs:10},
-    {name:"Cukinia", protein:1, fat:0, carbs:3},
-    {name:"Papryka czerwona", protein:1, fat:0, carbs:6},
-    {name:"Pomidor", protein:1, fat:0, carbs:4},
-    {name:"Jabłko", protein:0, fat:0, carbs:14},
-    {name:"Banan", protein:1, fat:0, carbs:23},
-    {name:"Borówki", protein:1, fat:0, carbs:14},
-    {name:"Pomarańcza", protein:1, fat:0, carbs:12},
-    {name:"Truskawki", protein:1, fat:0, carbs:8},
+    {name:"🍗 Pierś z kurczaka", protein:22, fat:2, carbs:0, category: "protein"},
+    {name:"🦃 Indyk", protein:21, fat:1, carbs:0, category: "protein"},
+    {name:"🐟 Łosoś", protein:20, fat:13, carbs:0, category: "protein"},
+    {name:"🐟 Tuńczyk", protein:23, fat:1, carbs:0, category: "protein"},
+    {name:"🥚 Jajka", protein:13, fat:11, carbs:1, category: "protein"},
+    {name:"🧀 Twaróg chudy", protein:18, fat:1, carbs:3, category: "protein"},
+    {name:"🥛 Jogurt naturalny", protein:10, fat:3, carbs:4, category: "protein"},
+    {name:"🥩 Tofu", protein:8, fat:5, carbs:2, category: "protein"},
+    {name:"🫘 Soczewica gotowana", protein:9, fat:0, carbs:20, category: "carbs"},
+    {name:"🍚 Ryż biały", protein:7, fat:1, carbs:78, category: "carbs"},
+    {name:"🍚 Ryż brązowy", protein:8, fat:2, carbs:76, category: "carbs"},
+    {name:"🍝 Makaron pełnoziarnisty", protein:12, fat:2, carbs:70, category: "carbs"},
+    {name:"🌾 Kasza gryczana", protein:13, fat:3, carbs:70, category: "carbs"},
+    {name:"🌾 Kasza jaglana", protein:11, fat:4, carbs:72, category: "carbs"},
+    {name:"🥔 Ziemniaki gotowane", protein:2, fat:0, carbs:20, category: "carbs"},
+    {name:"🍠 Bataty", protein:2, fat:0, carbs:20, category: "carbs"},
+    {name:"🍞 Pieczywo pełnoziarniste", protein:9, fat:3, carbs:49, category: "carbs"},
+    {name:"🥖 Bułka ciabatta", protein:10, fat:3, carbs:57, category: "carbs"},
+    {name:"🌯 Tortilla pełnoziarnista", protein:9, fat:4, carbs:50, category: "carbs"},
+    {name:"🫒 Oliwa z oliwek", protein:0, fat:100, carbs:0, category: "fat"},
+    {name:"🥑 Awokado", protein:2, fat:15, carbs:9, category: "fat"},
+    {name:"🌰 Orzechy włoskie", protein:15, fat:65, carbs:14, category: "fat"},
+    {name:"🌰 Migdały", protein:21, fat:49, carbs:22, category: "fat"},
+    {name:"🥦 Brokuł", protein:3, fat:0, carbs:7, category: "veggie"},
+    {name:"🥬 Szpinak", protein:3, fat:0, carbs:4, category: "veggie"},
+    {name:"🥕 Marchew", protein:1, fat:0, carbs:10, category: "veggie"},
+    {name:"🥒 Cukinia", protein:1, fat:0, carbs:3, category: "veggie"},
+    {name:"🌶️ Papryka czerwona", protein:1, fat:0, carbs:6, category: "veggie"},
+    {name:"🍅 Pomidor", protein:1, fat:0, carbs:4, category: "veggie"},
+    {name:"🍎 Jabłko", protein:0, fat:0, carbs:14, category: "fruit"},
+    {name:"🍌 Banan", protein:1, fat:0, carbs:23, category: "fruit"},
+    {name:"🫐 Borówki", protein:1, fat:0, carbs:14, category: "fruit"},
+    {name:"🍊 Pomarańcza", protein:1, fat:0, carbs:12, category: "fruit"},
+    {name:"🍓 Truskawki", protein:1, fat:0, carbs:8, category: "fruit"},
   ];
+
+  // Rekomendowane podziały kalorii na poszczególne posiłki
+  const mealDistribution = {
+    3: [0.30, 0.40, 0.30], // śniadanie, obiad, kolacja
+    4: [0.25, 0.10, 0.40, 0.25], // śniadanie, II śniadanie, obiad, kolacja
+    5: [0.25, 0.15, 0.30, 0.10, 0.20], // śniadanie, II śniadanie, obiad, podwieczorek, kolacja
+    6: [0.20, 0.15, 0.25, 0.15, 0.15, 0.10] // śniadanie, II śniadanie, obiad, podwieczorek, kolacja, II kolacja
+  };
+
+  const mealNames = {
+    3: ["🌅 Śniadanie", "🌞 Obiad", "🌙 Kolacja"],
+    4: ["🌅 Śniadanie", "☕ II Śniadanie", "🌞 Obiad", "🌙 Kolacja"],
+    5: ["🌅 Śniadanie", "☕ II Śniadanie", "🌞 Obiad", "🍎 Podwieczorek", "🌙 Kolacja"],
+    6: ["🌅 Śniadanie", "☕ II Śniadanie", "🌞 Obiad", "🍎 Podwieczorek", "🌙 Kolacja", "🥛 II Kolacja"]
+  };
 
   function calculate() {
     const meals = parseInt(document.getElementById("meals").value);
@@ -120,7 +506,7 @@
     const diet = document.getElementById("diet").value;
 
     if (!weight || !height || !age) {
-      alert("Wprowadź wszystkie dane!");
+      alert("⚠️ Wprowadź wszystkie dane!");
       return;
     }
 
@@ -140,29 +526,43 @@
     document.getElementById("protein").textContent = protein;
     document.getElementById("fat").textContent = fat;
     document.getElementById("carbs").textContent = carbs;
+    
+    document.getElementById("summarySection").style.display = "block";
+    document.getElementById("emptyState").style.display = "none";
 
     const mealsPlan = document.getElementById("mealsPlan");
     mealsPlan.innerHTML = "";
 
+    const distribution = mealDistribution[meals];
+    const names = mealNames[meals];
+
     for (let i = 1; i <= meals; i++) {
-      const mealCalories = Math.round(calories / meals);
-      const mealProtein = Math.round(protein / meals);
-      const mealFat = Math.round(fat / meals);
-      const mealCarbs = Math.round(carbs / meals);
+      const mealPercentage = distribution[i - 1];
+      const mealCalories = Math.round(calories * mealPercentage);
+      const mealProtein = Math.round(protein * mealPercentage);
+      const mealFat = Math.round(fat * mealPercentage);
+      const mealCarbs = Math.round(carbs * mealPercentage);
 
       const div = document.createElement("div");
       div.className = "meal-box";
       div.innerHTML = `
-        <strong>Posiłek ${i}</strong><br>
-        Cel: ${mealCalories} kcal (B: ${mealProtein}g, T: ${mealFat}g, W: ${mealCarbs}g)
-        <div class="remaining" id="remain-${i}">
-          Pozostało → kcal: ${mealCalories}, B: ${mealProtein}g, T: ${mealFat}g, W: ${mealCarbs}g
+        <div class="meal-title">${names[i - 1]}</div>
+        <div class="meal-goal">
+          Cel: ${mealCalories} kcal (${Math.round(mealPercentage * 100)}%) | B: ${mealProtein}g | T: ${mealFat}g | W: ${mealCarbs}g
         </div>
-        <select id="product-${i}"></select>
-        <input type="number" id="grams-${i}" placeholder="gramy" min="1">
-        <button onclick="addProduct(${i})">Dodaj</button>
+        <div class="remaining" id="remain-${i}">
+          Pozostało → ${mealCalories} kcal | B: ${mealProtein}g | T: ${mealFat}g | W: ${mealCarbs}g
+        </div>
+        <div class="product-selector">
+          <select id="product-${i}"></select>
+          <div class="grams-input-container">
+            <input type="number" id="grams-${i}" placeholder="gramy" min="1">
+            <div class="max-grams-hint" id="maxHint-${i}">max: 0g</div>
+          </div>
+          <button class="add-btn" onclick="addProduct(${i})">Dodaj</button>
+        </div>
         <table id="table-${i}">
-          <tr><th>Produkt</th><th>g</th><th>Kcal</th><th>B</th><th>T</th><th>W</th></tr>
+          <tr><th>Produkt</th><th>Gramy</th><th>Kcal</th><th>B</th><th>T</th><th>W</th></tr>
         </table>
       `;
       mealsPlan.appendChild(div);
@@ -170,26 +570,57 @@
     }
   }
 
+  function calculateMaxGrams(product, remainKcal, remainP, remainF, remainC) {
+    const kcalPer100g = product.protein*4 + product.fat*9 + product.carbs*4;
+    
+    let maxByKcal = kcalPer100g > 0 ? (remainKcal / kcalPer100g) * 100 : Infinity;
+    let maxByProtein = product.protein > 0 ? (remainP / product.protein) * 100 : Infinity;
+    let maxByFat = product.fat > 0 ? (remainF / product.fat) * 100 : Infinity;
+    let maxByCarbs = product.carbs > 0 ? (remainC / product.carbs) * 100 : Infinity;
+    
+    return Math.floor(Math.min(maxByKcal, maxByProtein, maxByFat, maxByCarbs));
+  }
+
   function updateProductList(mealId, remainKcal, remainP, remainF, remainC) {
     const select = document.getElementById(`product-${mealId}`);
+    const maxHint = document.getElementById(`maxHint-${mealId}`);
+    
     if (remainKcal <= 0) {
-      select.innerHTML = "<option>Brak dostępnych produktów</option>";
+      select.innerHTML = "<option>✅ Posiłek kompletny</option>";
       select.disabled = true;
+      maxHint.textContent = "max: 0g";
       return;
     }
 
     select.disabled = false;
-    select.innerHTML = products
-      .filter(p => {
-        const kcal100 = p.protein*4 + p.fat*9 + p.carbs*4;
-        if (remainP <= 0 && p.protein > 5) return false;
-        if (remainF <= 0 && p.fat > 5) return false;
-        if (remainC <= 0 && p.carbs > 10) return false;
-        if (remainKcal <= 0 && kcal100 > 50) return false;
-        return true;
-      })
+    const availableProducts = products.filter(p => {
+      const kcal100 = p.protein*4 + p.fat*9 + p.carbs*4;
+      return calculateMaxGrams(p, remainKcal, remainP, remainF, remainC) >= 10; // minimum 10g
+    });
+
+    select.innerHTML = availableProducts
       .map(p => `<option value='${JSON.stringify(p)}'>${p.name}</option>`)
       .join("");
+
+    // Update max grams hint when product selection changes
+    select.addEventListener('change', function() {
+      if (this.value && availableProducts.length > 0) {
+        const selectedProduct = JSON.parse(this.value);
+        const maxGrams = calculateMaxGrams(selectedProduct, remainKcal, remainP, remainF, remainC);
+        maxHint.textContent = `max: ${maxGrams}g`;
+        maxHint.style.display = 'block';
+      }
+    });
+
+    // Initialize with first product
+    if (availableProducts.length > 0) {
+      const firstProduct = availableProducts[0];
+      const maxGrams = calculateMaxGrams(firstProduct, remainKcal, remainP, remainF, remainC);
+      maxHint.textContent = `max: ${maxGrams}g`;
+      maxHint.style.display = 'block';
+    } else {
+      maxHint.style.display = 'none';
+    }
   }
 
   function addProduct(mealId) {
@@ -201,42 +632,52 @@
     let grams = parseFloat(gramsInput.value);
 
     if (!grams || grams <= 0) {
-      alert("Podaj ilość gramów!");
+      alert("⚠️ Podaj ilość gramów!");
       return;
     }
 
     const remainDiv = document.getElementById(`remain-${mealId}`);
-    const current = remainDiv.textContent.match(/kcal: (-?\d+), B: (-?\d+)g, T: (-?\d+)g, W: (-?\d+)g/);
+    const current = remainDiv.textContent.match(/(\d+) kcal.*B: (\d+)g.*T: (\d+)g.*W: (\d+)g/);
     let rKcal = parseInt(current[1]);
     let rP = parseInt(current[2]);
     let rF = parseInt(current[3]);
     let rC = parseInt(current[4]);
+
+    // Calculate max possible grams
+    const maxGrams = calculateMaxGrams(product, rKcal, rP, rF, rC);
+    
+    if (grams > maxGrams) {
+      alert(`⚠️ Maksymalna ilość tego produktu to ${maxGrams}g!`);
+      return;
+    }
 
     const kcal = (product.protein*4 + product.fat*9 + product.carbs*4) * grams/100;
     const prot = product.protein * grams/100;
     const fat = product.fat * grams/100;
     const carb = product.carbs * grams/100;
 
-    if (kcal > rKcal || prot > rP || fat > rF || carb > rC) {
-      alert("Nie możesz przekroczyć celu dla posiłku!");
-      return;
-    }
-
     const table = document.getElementById(`table-${mealId}`);
     table.innerHTML += `<tr>
       <td>${product.name}</td>
       <td>${grams.toFixed(0)}</td>
       <td>${kcal.toFixed(0)}</td>
-      <td>${prot.toFixed(0)}</td>
-      <td>${fat.toFixed(0)}</td>
-      <td>${carb.toFixed(0)}</td>
+      <td>${prot.toFixed(1)}</td>
+      <td>${fat.toFixed(1)}</td>
+      <td>${carb.toFixed(1)}</td>
     </tr>`;
 
-    rKcal -= kcal;
-    rP -= prot;
-    rF -= fat;
-    rC -= carb;
-    remainDiv.textContent = `Pozostało → kcal: ${Math.max(0, rKcal.toFixed(0))}, B: ${Math.max(0, rP.toFixed(0))}g, T: ${Math.max(0, rF.toFixed(0))}g, W: ${Math.max(0, rC.toFixed(0))}g`;
+    rKcal = Math.max(0, rKcal - kcal);
+    rP = Math.max(0, rP - prot);
+    rF = Math.max(0, rF - fat);
+    rC = Math.max(0, rC - carb);
+    
+    const progress = rKcal === 0 ? "✅ Kompletne!" : 
+                    `Pozostało → ${Math.round(rKcal)} kcal | B: ${Math.round(rP)}g | T: ${Math.round(rF)}g | W: ${Math.round(rC)}g`;
+    
+    remainDiv.innerHTML = progress;
+    if (rKcal === 0) {
+      remainDiv.style.color = "#27ae60";
+    }
 
     gramsInput.value = "";
     updateProductList(mealId, rKcal, rP, rF, rC);
